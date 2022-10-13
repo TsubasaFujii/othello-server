@@ -1,4 +1,3 @@
-const { addPlayer } = require('./JS/controller/player.controller');
 const Player = require('./JS/player');
 const Game = require('./JS/game');
 
