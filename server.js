@@ -12,7 +12,7 @@ const options = {
     },
     pingTimeout: 300,
 };
-const games = [];
+let games = [];
 
 const httpServer = createServer();
 const io = new Server(httpServer, options);
@@ -78,12 +78,12 @@ io.on('connection', (socket) => {
         const game = games.find(game => game.players.some(p => p.id === id));
         if (game.isEnded()) {
             io.in(game.code).emit('game:ended', ({
-                result: game.getGameResult()  
+                result: game.getGameResult(),
             }));
+            games = games.filter(({code}) => code !== game.code);
         }
 
         const {values} = game.board;
-        
         io.to(game.getOpponentPlayerId()).emit('game:opponent_turn', {
             board: values,
         });
