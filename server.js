@@ -4,7 +4,7 @@ const Game = require('./JS/game');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 const options = {
     cors: {
         origin: [process.env.CLIENT_URL],
@@ -17,11 +17,6 @@ const games = [];
 
 const httpServer = createServer();
 const io = new Server(httpServer, options);
-
-io.use((socket, next) => {
-    socket.onAny((event, data) => console.log(`${event}`));
-    next();
-});
 
 io.on('connection', (socket) => {
     const id = socket.id;
