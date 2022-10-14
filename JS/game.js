@@ -59,8 +59,8 @@ class Game {
 
     getGameResult() {
         const [{id: player1}, {id: player2}] = this.players;
-        const result = this.board.values.reduce((sum, square) => {
-            sum[square.takenBy]++;
+        const result = this.board.values.reduce((sum, row) => {
+            row.forEach(({takenBy}) => sum[takenBy.id]++);
             return sum;
         }, {
             [player1]: 0,
