@@ -3,19 +3,29 @@ const Game = require('./JS/game');
 
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+const express = require('express');
+const app = express();
 
 const PORT = process.env.PORT || 4000;
-const options = {
+const OPTIONS = {
     cors: {
         origin: process.env.CLIENT_URL,
         method: ['GET', 'POST'],
     },
     pingTimeout: 300,
 };
+const httpServer = createServer(app);
+const io = new Server(httpServer, OPTIONS);
+
 let games = [];
 
-const httpServer = createServer();
-const io = new Server(httpServer, options);
+/////////////////////
+
+app.get('/', (_, res) => {
+    res.send('<p>The server is working.</p>')
+});
+
+/////////////////////
 
 io.on('connection', (socket) => {
     const id = socket.id;
@@ -132,12 +142,11 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         const game = games.find(game => game.players.some(p => p.id === id));
         if (!game) return;
-        const targetGameCode =game.code;
+        const targetGameCode = game.code;
         socket.to(targetGameCode).emit('user: disconnected', ({
             message: 'Opponent lost connection',
         }));
-        games.splice(games.indexOf(game => game.code === targetGameCode), 1);
-        
+        games = games.filter(game => game.code !== targetGameCode);
     });
 });
 
