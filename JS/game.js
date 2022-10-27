@@ -67,7 +67,17 @@ class Game {
             [player2]: 0,
         });
 
-        return result;
+        if (result[player1] === result[player2]) {
+            return {
+                win: null,
+                lose: null,
+            }
+        }
+
+        return {
+            win: result[player1] > result[player2] ? player1 : player2,
+            lose: result[player1] > result[player2] ? player2 : player1,
+        };
     }
 }
 
