@@ -76,6 +76,7 @@ io.on('connection', (socket) => {
         targetGame.addPlayer(player);
         targetGame.start();
         socket.join(providedCode);
+        console.log('\x1b[32m%s\x1b[0m', `${player.id} has joined to the game ${providedCode}. The game has started.`);
 
         const { values } = targetGame.board;
         io.in(providedCode).emit('game:start', ({
@@ -86,14 +87,38 @@ io.on('connection', (socket) => {
 
     function notifyTurn() {
         const game = games.find(game => game.players.some(p => p.id === id));
+        const {values} = game.board;
+
         if (game.isEnded()) {
-            io.in(game.code).emit('game:ended', ({
-                result: game.getGameResult(),
-            }));
-            games = games.filter(({code}) => code !== game.code);
+            const {code} = game;
+            io.in(code).emit('game:ended', {
+                board: values,
+            });
+            console.log('\x1b[32m%s\x1b[0m', `The game [code: ${code}] has ended.`);
+
+            const result = game.getGameResult();
+            if (!result.win) {
+                io.in(code).emit('game:result', {
+                    result: 'Draw!',
+                    hasWon: false,
+                });
+            } else {
+                io.to(result.win).emit('game:result', {
+                    result: 'You won.',
+                    hasWon: true,
+                });
+                io.to(result.lose).emit('game:result', {
+                    result: 'You lost.',
+                    hasWon: false,
+                });
+            }
+
+            games = games.filter(game => game.code !== code);
+            console.log('\x1b[32m%s\x1b[0m', `The game code [code: ${code}] has removed.`);
+            io.socketsLeave(code);
+            return;
         }
 
-        const {values} = game.board;
         io.to(game.getOpponentPlayerId()).emit('game:opponent_turn', {
             board: values,
         });
